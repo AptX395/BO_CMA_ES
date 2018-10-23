@@ -1311,7 +1311,7 @@ class CMAEvolutionStrategy(interfaces.OOOptimizer):
 
         return self._stopdict(self, check)  # update the stopdict and return a Dict
 
-    def __init__(self, x0, sigma0, inopts=None):
+    def __init__(self, CC, C1, CMU, x0, sigma0, inopts=None):
         """see class `CMAEvolutionStrategy`
 
         """
@@ -1417,7 +1417,7 @@ class CMAEvolutionStrategy(interfaces.OOOptimizer):
         # self.fmean = np.NaN  # TODO name should change? prints nan in output files (OK with matlab&octave)
         # self.fmean_noise_free = 0.  # for output only
 
-        self.sp = _CMAParameters(N, opts)
+        self.sp = _CMAParameters(CC, C1, CMU, N, opts)
         self.sp0 = self.sp  # looks useless, as it is not a copy
 
         self.adapt_sigma = opts['AdaptSigma']
@@ -3484,7 +3484,7 @@ class _CMAParameters(object):
     :See: `CMAOptions`, `CMAEvolutionStrategy`
 
     """
-    def __init__(self, N, opts, ccovfac=1, verbose=True):
+    def __init__(self, CC, C1, CMU, N, opts, ccovfac=1, verbose=True):
         """Compute strategy parameters, mainly depending on
         dimension and population size, by calling `set`
 
@@ -3493,9 +3493,9 @@ class _CMAParameters(object):
         if ccovfac == 1:
             ccovfac = opts['CMA_on']  # that's a hack
         self.popsize = None  # declaring the attribute, not necessary though
-        self.set(opts, ccovfac=ccovfac, verbose=verbose)
+        self.set(CC, C1, CMU, opts, ccovfac=ccovfac, verbose=verbose)
 
-    def set(self, opts, popsize=None, ccovfac=1, verbose=True):
+    def set(self, CC, C1, CMU, opts, popsize=None, ccovfac=1, verbose=True):
         """Compute strategy parameters as a function
         of dimension and population size """
 
@@ -3555,12 +3555,17 @@ class _CMAParameters(object):
 
         mueff = sp.weights.mueff
 
+        sp.cc = CC
+        sp.c1 = C1
+        sp.cmu = CMU
+
+
         # line 3415
         ## meta_parameters.cc_exponent == 1.0
         b = 1.0
         ## meta_parameters.cc_multiplier == 1.0
-        sp.cc = 1.0 * (limit_fac_cc + mueff / N)**b / \
-                (N**b + (limit_fac_cc + 2 * mueff / N)**b)
+#        sp.cc = 1.0 * (limit_fac_cc + mueff / N)**b / \
+#                (N**b + (limit_fac_cc + 2 * mueff / N)**b)
         sp.cc_sep = (1 + 1 / N + mueff / N) / \
                     (N**0.5 + 1 / N + 2 * mueff / N)
         if hasattr(opts['vv'], '__getitem__'):
@@ -3573,9 +3578,9 @@ class _CMAParameters(object):
                 print('cc is %f' % sp.cc)
 
         ## meta_parameters.c1_multiplier == 1.0
-        sp.c1 = (1.0 * opts['CMA_rankone'] * ccovfac * min(1, sp.popsize / 6) *
+#        sp.c1 = (1.0 * opts['CMA_rankone'] * ccovfac * min(1, sp.popsize / 6) *
                  ## meta_parameters.c1_exponent == 2.0
-                 2 / ((N + 1.3)** 2.0 + mueff))
+#                 2 / ((N + 1.3)** 2.0 + mueff))
                  # 2 / ((N + 1.3)** 1.5 + mueff))  # TODO
                  # 2 / ((N + 1.3)** 1.75 + mueff))  # TODO
         # 1/0
@@ -3594,12 +3599,12 @@ class _CMAParameters(object):
                 rankmu_offset = opts['vv']['sweep_rankmu_offset']
                 print("rankmu_offset = %.2f" % rankmu_offset)
             mu = mueff
-            sp.cmu = min(1 - sp.c1,
-                         opts['CMA_rankmu'] * ccovfac * alphacov *
+#            sp.cmu = min(1 - sp.c1,
+#                        opts['CMA_rankmu'] * ccovfac * alphacov *
                          # simpler nominator would be: (mu - 0.75)
-                         (rankmu_offset + mu + 1 / mu - 2) /
+#                         (rankmu_offset + mu + 1 / mu - 2) /
                          ## meta_parameters.cmu_exponent == 2.0
-                         ((N + 2)** 2.0 + alphacov * mu / 2))
+#                         ((N + 2)** 2.0 + alphacov * mu / 2))
                          # ((N + 2)** 1.5 + alphacov * mu / 2))  # TODO
                          # ((N + 2)** 1.75 + alphacov * mu / 2))  # TODO
                          # cmu -> 1 for mu -> N**2 * (2 / alphacov)
