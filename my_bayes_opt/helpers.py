@@ -219,10 +219,12 @@ class PrintLog(object):
         if self.ymax is None or self.ymax < y:
             self.ymax = y
             self.xmax = x
-            print("{0}{2: >10.5f}{1}".format(BColours.MAGENTA,
-                                             BColours.ENDC,
-                                             y),
-                  end=" | ")
+#            print("{0}{2: >10.5f}{1}".format(BColours.MAGENTA,
+#                                             BColours.ENDC,
+#                                             y),
+#                  end=" | ")
+
+            print(y, end = " | ")
 
             for index in self.sorti:
                 print("{0}{2: >{3}.{4}f}{1}".format(
@@ -233,7 +235,10 @@ class PrintLog(object):
                         ),
                       end=" | ")
         else:
-            print("{: >10.5f}".format(y), end=" | ")
+#            print("{: >10.5f}".format(y), end=" | ")
+
+            print(y, end = " | ")
+
             for index in self.sorti:
                 print("{0: >{1}.{2}f}".format(x[index],
                                               self.sizes[index] + 2,

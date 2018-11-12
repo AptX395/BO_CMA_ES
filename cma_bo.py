@@ -16,3 +16,5 @@ rf_bo = BayesianOptimization(
     )
 
 rf_bo.maximize()
+print(rf_bo.res['max'])
+print(rf_bo.res['all'])
